@@ -1,0 +1,45 @@
+version: '3.4'
+
+services:
+
+    db:
+        image: "mcr.microsoft.com/azure-sql-edge"
+        container_name: sql
+        environment:
+          - ACCEPT_EULA=1
+          - MSSQL_USER=SA
+          - MSSQL_SA_PASSWORD=MultiTenantAppP@ssword!!
+          - MSSQL_PID=Developer
+        ports:
+          - "1433:1433"
+
+    tenant.api:
+        container_name: tenant-api-container
+        restart: always
+        build:
+          context: .
+          dockerfile: src/Tenant/Tenant.API/Dockerfile
+        environment:
+          - ASPNETCORE_ENVIRONMENT=Development
+          - ASPNETCORE_URLS=http://+:80
+        ports:
+          - "7000:80"
+        depends_on:
+            - db
+
+    auth.api:
+        container_name: auth-api-container
+        restart: always
+        build:
+          context: .
+          dockerfile: src/Auth/Auth.API/Dockerfile
+        environment:
+          - ASPNETCORE_ENVIRONMENT=Development
+          - ASPNETCORE_URLS=http://+:80
+        ports:
+          - "8000:80"
+        depends_on:
+            - db
+
+networks:
+  database:
