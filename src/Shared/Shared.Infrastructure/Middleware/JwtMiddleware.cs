@@ -22,28 +22,21 @@ public class JwtMiddleware
 
         if (token != null)
         {
-            try
+            bool result = _authService.ValidateCurrentToken(token);
+
+            if (result == false)
             {
-                bool result = _authService.ValidateCurrentToken(token);
-
-                if (result == false)
-                {
-                    return;
-                }
-
-                var tenantInfo = _authService.GetClaim(token, "TenantInfo");
-
-                if (string.IsNullOrWhiteSpace(tenantInfo))
-                {
-                    return;
-                }
-
-                context.Items["TenantInfo"] = JsonConvert.DeserializeObject<TenantInfo>(tenantInfo);
+                return;
             }
-            catch
+
+            var tenantInfo = _authService.GetClaim(token, "TenantInfo");
+
+            if (string.IsNullOrWhiteSpace(tenantInfo))
             {
-                
+                return;
             }
+
+            context.Items["TenantInfo"] = JsonConvert.DeserializeObject<TenantInfo>(tenantInfo);
         }
 
         await _next(context);
